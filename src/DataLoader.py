@@ -6,11 +6,12 @@ import h5py
 import glob
 
 
-def selectRandomSample(f, n, length):
+def selectRandomSample(BBInfo, n):
+    length = len(BBInfo)
     while True:
         i = np.random.randint(low=0, high=length)
 
-        item = getBBInfo(f, i)
+        item = BBInfo[i]
         num_digits = len(item['label'])
 
         if num_digits <= n:
@@ -41,16 +42,19 @@ def getBoundingBoxAroundAllDigits(item):
     return cropped_left, cropped_top, cropped_width, cropped_height
 
 
-def getBBInfo(file1, index):
-    attrs = {}
-    file = file1
-    item = file['digitStruct']['bbox'][index].item()
-    for key in ['label', 'left', 'top', 'width', 'height']:
-        attr = file[item][key]
-        values = [file[attr[i].item()][0][0] for i in range(len(attr))] if len(attr) > 1 else [attr[0][0]]
-        attrs[key] = values
+def getBBInfo(digit_struct_mat_file, length):
+    boxes = []
+    with h5py.File(digit_struct_mat_file, 'r') as file:
+        for index in range(length):
+            attrs = {}
+            item = file['digitStruct']['bbox'][index].item()
+            for key in ['label', 'left', 'top', 'width', 'height']:
+                attr = file[item][key]
+                values = [file[attr[i].item()][0][0] for i in range(len(attr))] if len(attr) > 1 else [attr[0][0]]
+                attrs[key] = values
+            boxes.append(attrs)
 
-    return attrs
+    return boxes
 
 
 class DataSet(Dataset):
@@ -58,7 +62,7 @@ class DataSet(Dataset):
         super(DataSet, self).__init__()
         self.data_dir = data_dir
         self.img_names = glob.glob(join(data_dir, '*.png'))
-        self.f = h5py.File(digit_struct_mat_file, 'r')
+        self.BBInfo = getBBInfo(digit_struct_mat_file, len(self.img_names))
         self.transform = transform
 
     def __len__(self):
@@ -66,12 +70,12 @@ class DataSet(Dataset):
 
     def __getitem__(self, index):
 
-        item = getBBInfo(self.f, index)
+        item = self.BBInfo[index]
         num_digits = len(item['label'])
 
         if num_digits > 5:
             # number of digits are greater than n=5 in an image, we will select another image randomly
-            index, item, num_digits = selectRandomSample(self.f, n=5, length=len(self.img_names))
+            index, item, num_digits = selectRandomSample(self.BBInfo, n=5)
 
         left, top, width, height = getBoundingBoxAroundAllDigits(item)
 
