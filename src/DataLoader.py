@@ -6,13 +6,11 @@ import h5py
 import glob
 
 
-def selectRandomSample(bounding_infos, n):
-    length = len(bounding_infos)
-
+def selectRandomSample(f, n, length):
     while True:
         i = np.random.randint(low=0, high=length)
 
-        item = bounding_infos[i]
+        item = getBBInfo(f, i)
         num_digits = len(item['label'])
 
         if num_digits <= n:
@@ -73,7 +71,7 @@ class DataSet(Dataset):
 
         if num_digits > 5:
             # number of digits are greater than n=5 in an image, we will select another image randomly
-            index, item, num_digits = selectRandomSample(self.bounding_infos, n=5)
+            index, item, num_digits = selectRandomSample(self.f, n=5, length=len(self.img_names))
 
         left, top, width, height = getBoundingBoxAroundAllDigits(item)
 
