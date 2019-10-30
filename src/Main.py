@@ -12,6 +12,7 @@ from os.path import join
 import os
 import datetime
 from tensorboardX import SummaryWriter
+import tqdm
 
 
 def get_loss(length_logit, digit_logits, length_labels, digits_labels):
@@ -65,14 +66,14 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
                                                verbose=True, patience=config['training']['lr_step'])
 
     best_acc = 0
-    for epoch in range(1, num_epochs + 1):
+    for epoch in tqdm(range(1, num_epochs + 1)):
 
         # Train
         model.train()
         train_loss, train_acc = 0.0,  0.0  # monitor train loss and accuracy
 
         # Iterate over data
-        for img, length_labels, digit_labels in dataloaders['train']:
+        for img, length_labels, digit_labels in tqdm(dataloaders['train']):
 
             optimizer.zero_grad()  # zero the parameter gradients
 
