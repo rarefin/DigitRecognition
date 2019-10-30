@@ -77,7 +77,7 @@ class DataSet(Dataset):
 
         left, top, width, height = getBoundingBoxAroundAllDigits(item)
 
-        path = join(self.data_dir, str(index) + '.png')
+        path = join(self.data_dir, str(index+1) + '.png')
         img = Image.open(path)
         img = img.crop([left, top, left + width, top + height])
         img = img.resize([64, 64])
