@@ -1,0 +1,18 @@
+{
+  "paths": {
+    "data_directory": "../../data",
+    "checkpoint_dir": "../",
+    "tb_log_file_dir": "../"
+  },
+
+  "training": {
+     "num_epochs": 200,
+     "batch_size": 128,
+
+     "n_workers": 1,
+
+     "lr": 0.001,
+     "lr_step": 2,
+     "lr_decay": 0.97
+  }
+}
