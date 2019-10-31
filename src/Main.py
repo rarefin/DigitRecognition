@@ -13,14 +13,19 @@ import os
 import datetime
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
+from torch import nn
 
 
 def get_loss(length_logit, digit_logits, length_labels, digits_labels):
+    criterion = nn.CrossEntropyLoss()
 
-    loss = torch.nn.functional.cross_entropy(length_logit, length_labels)
+    if torch.cuda.is_available():
+            criterion.cuda()
+
+    loss = criterion(length_logit, length_labels)
 
     for i in range(len(digit_logits)):
-        loss += torch.nn.functional.cross_entropy(digit_logits[i], digits_labels[i])
+        loss += criterion(digit_logits[i], digits_labels[i])
 
     return loss
 
