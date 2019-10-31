@@ -1,5 +1,5 @@
 import torch.nn as nn
-
+import torch
 
 class Block(nn.Module):
     def __init__(self, in_channels, out_channels, conv_kernel, pool_kernel, pool_stride):
@@ -24,32 +24,32 @@ class DigitNet(nn.Module):
 
         self.features = nn.Sequential(
             Block(in_channels=3, out_channels=32, conv_kernel=3, pool_kernel=2, pool_stride=2),
-            Block(in_channels=32, out_channels=64, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            Block(in_channels=32, out_channels=64, conv_kernel=3, pool_kernel=2, pool_stride=1),
             Block(in_channels=64, out_channels=128, conv_kernel=3, pool_kernel=2, pool_stride=2),
-            Block(in_channels=128, out_channels=256, conv_kernel=3, pool_kernel=2, pool_stride=2),
-            Block(in_channels=256, out_channels=256, conv_kernel=3, pool_kernel=2, pool_stride=2),
-            # Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1),
+            Block(in_channels=128, out_channels=192, conv_kernel=3, pool_kernel=2, pool_stride=1),
+            Block(in_channels=192, out_channels=192, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            Block(in_channels=192, out_channels=192, conv_kernel=3, pool_kernel=2, pool_stride=2),
             # Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2),
             # Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1)
         )
 
         self.fully_connected = nn.Sequential(
-            nn.Linear(256 * 3 * 3, 2304),
+            nn.Linear(192 * 5 * 5, 4096),
             nn.PReLU(),
-            nn.Linear(2304, 2304),
+            nn.Linear(4096, 4096),
             nn.PReLU()
         )
 
-        self.digit_length = nn.Sequential(nn.Linear(2304, 7))
-        self.digit1 = nn.Sequential(nn.Linear(2304, 11))
-        self.digit2 = nn.Sequential(nn.Linear(2304, 11))
-        self.digit3 = nn.Sequential(nn.Linear(2304, 11))
-        self.digit4 = nn.Sequential(nn.Linear(2304, 11))
-        self.digit5 = nn.Sequential(nn.Linear(2304, 11))
+        self.digit_length = nn.Sequential(nn.Linear(4096, 7))
+        self.digit1 = nn.Sequential(nn.Linear(4096, 11))
+        self.digit2 = nn.Sequential(nn.Linear(4096, 11))
+        self.digit3 = nn.Sequential(nn.Linear(4096, 11))
+        self.digit4 = nn.Sequential(nn.Linear(4096, 11))
+        self.digit5 = nn.Sequential(nn.Linear(4096, 11))
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), 256 * 3 * 3)
+        x = x.view(x.size(0), 192 * 5 * 5)
         x = self.fully_connected(x)
 
         length_logits = self.digit_length(x)
@@ -60,3 +60,9 @@ class DigitNet(nn.Module):
         digit5_logits = self.digit5(x)
 
         return length_logits, [digit1_logits, digit2_logits, digit3_logits, digit4_logits, digit5_logits]
+#
+# model = DigitNet()
+# x = torch.rand(8, 3, 54, 54)
+# y = model(x)
+#
+# print(y.shape)
