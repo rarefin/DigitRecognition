@@ -127,7 +127,7 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
         val_loss, val_acc = evaluate(model, dataloaders['val'], device)
         test_loss, test_acc = evaluate(model, dataloaders['test'], device)
 
-        if best_acc > val_acc:
+        if val_acc > best_acc:
             torch.save(model.state_dict(), os.path.join(checkpoint_dir, 'DigitNet.pth'))
             best_acc = val_acc
 
