@@ -5,7 +5,6 @@ import torch
 import numpy as np
 from Model import DigitNet
 import torch.optim as optim
-from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 from os.path import join
@@ -55,7 +54,7 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
 
     subfolder_pattern = 'batch_{}_time_{}'.format(batch_size, f"{datetime.datetime.now():%Y-%m-%d-%H-%M-%S-%f}")
 
-    checkpoint_dir = os.path.join(config["paths"]["checkpoint_dir"], 'checkpoints', subfolder_pattern)
+    checkpoint_dir = os.path.join(config["paths"]["checkpoint_dir"], 'checkpoints')
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     logging_dir = os.path.join(config['paths']['tb_log_file_dir'], 'log', subfolder_pattern)
@@ -72,7 +71,6 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
 
     best_acc = 0
     for epoch in tqdm(range(1, num_epochs + 1)):
-
         # Train
         model.train()
         train_loss, train_acc = 0.0,  0.0  # monitor train loss and accuracy
@@ -126,6 +124,7 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             best_acc = val_acc
 
         print("Epoch--> ", epoch)
+        print("-------------------------------------")
         print("train---> loss: ", train_loss, ", accuracy: ", train_acc)
         print("Val---> loss: ", val_loss, ", accuracy: ", val_acc)
 
