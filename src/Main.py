@@ -88,11 +88,9 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             # Backprop
             loss.backward()
             optimizer.step()
-            epoch_loss = loss.detach().cpu().numpy() * len(img) / len(dataloaders['train'].dataset)
+            epoch_loss = loss.detach().cpu().numpy() * len(img)
             train_loss += epoch_loss
-            train_acc += calculate_correct(digit_logits, digit_labels)
-
-            print(train_acc)
+            train_acc += calculate_correct(digit_logits, digit_labels).detach().cpu()
 
 
         # Evaluation
@@ -108,9 +106,9 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
 
             loss = get_loss(length_logit, digit_logits, length_labels, digit_labels)
 
-            epoch_loss = loss.detach().cpu().numpy() * len(img) / len(dataloaders['val'].dataset)
+            epoch_loss = loss.cpu().numpy() * len(img)
             val_loss += epoch_loss
-            val_acc += calculate_correct(digit_logits, digit_labels)
+            val_acc += calculate_correct(digit_logits, digit_labels).cpu().item()
 
         train_loss /= len(dataloaders['train'].dataset)
         val_loss /= len(dataloaders['val'].dataset)
@@ -118,12 +116,14 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
         train_acc /= len(dataloaders['train'].dataset)
         val_acc /= len(dataloaders['val'].dataset)
 
-        train_acc /= len(dataloaders['train'].dataset)
-        val_acc /= len(dataloaders['val'].dataset)
-
         if best_acc > val_acc:
             torch.save(model.state_dict(), os.path.join(checkpoint_dir, 'DigitNet.pth'))
             best_acc = val_acc
+
+        print("train/loss: ", train_loss)
+        print("train/accuracy: ", train_acc)
+        print("val/loss: ", val_loss)
+        print("val/accuracy: ", val_acc)
 
         writer.add_scalar("train/loss", train_loss, epoch)
         writer.add_scalar("train/accuracy", train_acc, epoch)
