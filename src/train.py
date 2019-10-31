@@ -45,6 +45,31 @@ def calculate_correct(digit_logits, digits_labels):
     return num_correct
 
 
+def evaluate(model, dataloader, device):
+    # Evaluation
+    model.eval()
+    eval_loss, eval_acc = 0.0, 0.0  # monitor loss and accuracy
+
+    for img, length_labels, digit_labels in dataloader:
+        img = img.float().to(device)
+        length_labels = length_labels.to(device)
+        digit_labels = [digit.to(device) for digit in digit_labels]
+
+        with torch.no_grad():
+            length_logit, digit_logits = model(img)
+
+        loss = get_loss(length_logit, digit_logits, length_labels, digit_labels)
+
+        epoch_loss = loss.cpu().item() * len(img)
+        eval_loss += epoch_loss
+        eval_acc += calculate_correct(digit_logits, digit_labels).cpu().item()
+
+    eval_loss /= len(dataloader.dataset)
+    eval_acc /= len(dataloader.dataset)
+
+    return eval_loss, eval_acc
+
+
 def trainAndGetBestModel(model, optimizer, dataloaders, config):
     np.random.seed(11)  # seed all RNGs for reproducibility
     torch.manual_seed(11)
@@ -95,29 +120,12 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             train_loss += epoch_loss
             train_acc += calculate_correct(digit_logits, digit_labels).detach().cpu().item()
 
-
-        # Evaluation
-        model.eval()
-        val_loss, val_acc = 0.0,  0.0  # monitor val loss and accuracy
-
-        for img, length_labels, digit_labels in dataloaders['val']:
-            img = img.float().to(device)
-            length_labels = length_labels.to(device)
-            digit_labels = [digit.to(device) for digit in digit_labels]
-
-            length_logit, digit_logits = model(img)
-
-            loss = get_loss(length_logit, digit_logits, length_labels, digit_labels)
-
-            epoch_loss = loss.detach().cpu().item() * len(img)
-            val_loss += epoch_loss
-            val_acc += calculate_correct(digit_logits, digit_labels).detach().cpu().item()
-
         train_loss /= len(dataloaders['train'].dataset)
-        val_loss /= len(dataloaders['val'].dataset)
-
         train_acc /= len(dataloaders['train'].dataset)
-        val_acc /= len(dataloaders['val'].dataset)
+
+        # Evaluation on validation and test data
+        val_loss, val_acc = evaluate(model, dataloaders['val'], device)
+        test_loss, test_acc = evaluate(model, dataloaders['test'], device)
 
         if best_acc > val_acc:
             torch.save(model.state_dict(), os.path.join(checkpoint_dir, 'DigitNet.pth'))
@@ -127,11 +135,14 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
         print("-------------------------------------")
         print("train---> loss: ", train_loss, ", accuracy: ", train_acc)
         print("Val---> loss: ", val_loss, ", accuracy: ", val_acc)
+        print("test---> loss: ", test_loss, ", accuracy: ", test_acc)
 
         writer.add_scalar("train/loss", train_loss, epoch)
         writer.add_scalar("train/accuracy", train_acc, epoch)
         writer.add_scalar("val/loss", val_loss, epoch)
         writer.add_scalar("val/accuracy", val_acc, epoch)
+        writer.add_scalar("test/loss", test_loss, epoch)
+        writer.add_scalar("test/accuracy", test_acc, epoch)
         scheduler.step(val_acc)
     writer.close()
 
@@ -165,7 +176,11 @@ def main(config):
     val_dataset = DataSet(join(data_directory, "val.lmdb"), transform)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=n_workers, pin_memory=True)
 
-    dataloaders = {'train': train_dataloader, 'val': val_dataloader}
+    test_dataset = DataSet(join(data_directory, "test.lmdb"), transform)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=n_workers,
+                                pin_memory=True)
+
+    dataloaders = {'train': train_dataloader, 'val': val_dataloader, 'test': test_dataloader}
 
     # Train model
     torch.cuda.empty_cache()
