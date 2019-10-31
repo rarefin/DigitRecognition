@@ -106,7 +106,7 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
 
             loss = get_loss(length_logit, digit_logits, length_labels, digit_labels)
 
-            epoch_loss = loss.detach().cpu() * len(img)
+            epoch_loss = loss.detach().cpu().item() * len(img)
             val_loss += epoch_loss
             val_acc += calculate_correct(digit_logits, digit_labels).detach().cpu().item()
 
@@ -120,10 +120,9 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             torch.save(model.state_dict(), os.path.join(checkpoint_dir, 'DigitNet.pth'))
             best_acc = val_acc
 
-        print("train/loss: ", train_loss)
-        print("train/accuracy: ", train_acc)
-        print("val/loss: ", val_loss)
-        print("val/accuracy: ", val_acc)
+        print("Epoch--> ", epoch)
+        print("train---> loss: ", train_loss, ", accuracy: ", train_acc)
+        print("Val---> loss: ", val_loss, ", accuracy: ", val_acc)
 
         writer.add_scalar("train/loss", train_loss, epoch)
         writer.add_scalar("train/accuracy", train_acc, epoch)
