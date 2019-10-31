@@ -12,7 +12,7 @@ from os.path import join
 import os
 import datetime
 from tensorboardX import SummaryWriter
-import tqdm
+from tqdm import tqdm
 
 
 def get_loss(length_logit, digit_logits, length_labels, digits_labels):
