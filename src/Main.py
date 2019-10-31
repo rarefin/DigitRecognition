@@ -92,6 +92,8 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             train_loss += epoch_loss
             train_acc += calculate_correct(digit_logits, digit_labels)
 
+            print(train_acc)
+
 
         # Evaluation
         model.eval()
@@ -154,10 +156,10 @@ def main(config):
         transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
     ])
 
-    train_dataset = DataSet(join(data_directory, "train"), join(data_directory, "train", "digitStruct.mat"), transform)
+    train_dataset = DataSet(join(data_directory, "train.lmdb"), transform)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=n_workers, pin_memory=True)
 
-    val_dataset = DataSet(join(data_directory, "extra"), join(data_directory, "extra", "digitStruct.mat"), transform)
+    val_dataset = DataSet(join(data_directory, "val.lmdb"), transform)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=n_workers, pin_memory=True)
 
     dataloaders = {'train': train_dataloader, 'val': val_dataloader}
