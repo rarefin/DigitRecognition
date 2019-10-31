@@ -35,8 +35,8 @@ class DigitNet(nn.Module):
 
         self.fully_connected = nn.Sequential(
             nn.Linear(192 * 7 * 7, 3072),
-            nn.PReLU(0.5),
-            nn.Dropout(),
+            nn.PReLU(),
+            nn.Dropout(0.5),
             nn.Linear(3072, 3072),
             nn.PReLU(),
             nn.Dropout(0.5)
