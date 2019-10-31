@@ -88,9 +88,9 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             # Backprop
             loss.backward()
             optimizer.step()
-            epoch_loss = loss.detach().cpu().numpy() * len(img)
+            epoch_loss = loss.detach().cpu().item() * len(img)
             train_loss += epoch_loss
-            train_acc += calculate_correct(digit_logits, digit_labels).detach().cpu()
+            train_acc += calculate_correct(digit_logits, digit_labels).detach().cpu().item()
 
 
         # Evaluation
@@ -106,9 +106,9 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
 
             loss = get_loss(length_logit, digit_logits, length_labels, digit_labels)
 
-            epoch_loss = loss.cpu().numpy() * len(img)
+            epoch_loss = loss.detach().cpu() * len(img)
             val_loss += epoch_loss
-            val_acc += calculate_correct(digit_logits, digit_labels).cpu().item()
+            val_acc += calculate_correct(digit_logits, digit_labels).detach().cpu().item()
 
         train_loss /= len(dataloaders['train'].dataset)
         val_loss /= len(dataloaders['val'].dataset)
