@@ -79,7 +79,7 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
 
     subfolder_pattern = 'batch_{}_time_{}'.format(batch_size, f"{datetime.datetime.now():%Y-%m-%d-%H-%M-%S-%f}")
 
-    checkpoint_dir = os.path.join(config["paths"]["checkpoint_dir"], 'checkpoints')
+    checkpoint_dir = os.path.join(config["paths"]["checkpoint_dir"], 'checkpoints', subfolder_pattern)
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     logging_dir = os.path.join(config['paths']['tb_log_file_dir'], 'log', subfolder_pattern)
