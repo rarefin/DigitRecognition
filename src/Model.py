@@ -27,19 +27,13 @@ class DigitNet(nn.Module):
             Block(in_channels=48, out_channels=64, conv_kernel=5, pool_kernel=2, pool_stride=1),
             Block(in_channels=64, out_channels=128, conv_kernel=5, pool_kernel=2, pool_stride=2),
             Block(in_channels=128, out_channels=160, conv_kernel=5, pool_kernel=2, pool_stride=1),
-            Block(in_channels=160, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2),
-            Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1),
-            Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2),
-            Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1)
+            Block(in_channels=160, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2)
         )
 
         self.fully_connected = nn.Sequential(
-            nn.Linear(192 * 7 * 7, 3072),
+            nn.Linear(192 * 9 * 9, 3072),
             nn.PReLU(),
             nn.Dropout(0.5),
-            nn.Linear(3072, 3072),
-            nn.PReLU(),
-            nn.Dropout(0.5)
         )
 
         self.digit_length = nn.Sequential(nn.Linear(3072, 7))
@@ -51,7 +45,7 @@ class DigitNet(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), 192 * 7 * 7)
+        x = x.view(x.size(0), 192 * 9 * 9)
         x = self.fully_connected(x)
 
         length_logits = self.digit_length(x)
