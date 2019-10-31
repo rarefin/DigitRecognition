@@ -23,33 +23,33 @@ class DigitNet(nn.Module):
         super(DigitNet, self).__init__()
 
         self.features = nn.Sequential(
-            Block(in_channels=3, out_channels=48, conv_kernel=5, pool_kernel=2, pool_stride=2),
-            Block(in_channels=48, out_channels=64, conv_kernel=5, pool_kernel=2, pool_stride=1),
-            Block(in_channels=64, out_channels=128, conv_kernel=5, pool_kernel=2, pool_stride=2),
-            Block(in_channels=128, out_channels=160, conv_kernel=5, pool_kernel=2, pool_stride=1),
-            Block(in_channels=160, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2),
-            Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1),
-            Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2),
-            Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1)
+            Block(in_channels=3, out_channels=32, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            Block(in_channels=32, out_channels=64, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            Block(in_channels=64, out_channels=128, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            Block(in_channels=128, out_channels=256, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            Block(in_channels=256, out_channels=256, conv_kernel=3, pool_kernel=2, pool_stride=2),
+            # Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1),
+            # Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=2),
+            # Block(in_channels=192, out_channels=192, conv_kernel=5, pool_kernel=2, pool_stride=1)
         )
 
         self.fully_connected = nn.Sequential(
-            nn.Linear(192 * 7 * 7, 3072),
+            nn.Linear(256 * 3 * 3, 2304),
             nn.PReLU(),
-            nn.Linear(3072, 3072),
+            nn.Linear(2304, 2304),
             nn.PReLU()
         )
 
-        self.digit_length = nn.Sequential(nn.Linear(3072, 7))
-        self.digit1 = nn.Sequential(nn.Linear(3072, 11))
-        self.digit2 = nn.Sequential(nn.Linear(3072, 11))
-        self.digit3 = nn.Sequential(nn.Linear(3072, 11))
-        self.digit4 = nn.Sequential(nn.Linear(3072, 11))
-        self.digit5 = nn.Sequential(nn.Linear(3072, 11))
+        self.digit_length = nn.Sequential(nn.Linear(2304, 7))
+        self.digit1 = nn.Sequential(nn.Linear(2304, 11))
+        self.digit2 = nn.Sequential(nn.Linear(2304, 11))
+        self.digit3 = nn.Sequential(nn.Linear(2304, 11))
+        self.digit4 = nn.Sequential(nn.Linear(2304, 11))
+        self.digit5 = nn.Sequential(nn.Linear(2304, 11))
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), 192 * 7 * 7)
+        x = x.view(x.size(0), 256 * 3 * 3)
         x = self.fully_connected(x)
 
         length_logits = self.digit_length(x)
