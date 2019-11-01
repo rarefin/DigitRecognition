@@ -170,7 +170,7 @@ def main(config):
         transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
     ])
 
-    train_dataset = DataSet(join(data_directory, "train.lmdb"), transform)
+    train_dataset = DataSet(join(data_directory, "train.lmdb"), transform, config["paths"]["negative_example_dir"])
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=n_workers, pin_memory=True)
 
     val_dataset = DataSet(join(data_directory, "val.lmdb"), transform)
