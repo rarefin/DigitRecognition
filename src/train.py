@@ -29,14 +29,16 @@ def get_loss(length_logit, digit_logits, length_labels, digits_labels):
     return loss
 
 
-def calculate_correct(digit_logits, digits_labels):
+def calculate_correct(digit_logits, digits_labels, length_logit, length_labels):
 
     digit_prediction = []
     for i in range(len(digit_logits)):
         digit_prediction.append(digit_logits[i].max(1)[1])
 
+    length_prediction = length_logit.max(1)[1]
     num_correct = 0
-    num_correct += (digit_prediction[0].eq(digits_labels[0]) &
+    num_correct += (length_prediction.eq(length_labels) &
+                    digit_prediction[0].eq(digits_labels[0]) &
                     digit_prediction[1].eq(digits_labels[1]) &
                     digit_prediction[2].eq(digits_labels[2]) &
                     digit_prediction[3].eq(digits_labels[3]) &
@@ -62,7 +64,7 @@ def evaluate(model, dataloader, device):
 
         epoch_loss = loss.cpu().item() * len(img)
         eval_loss += epoch_loss
-        eval_acc += calculate_correct(digit_logits, digit_labels).cpu().item()
+        eval_acc += calculate_correct(digit_logits, digit_labels, length_logit, length_labels).cpu().item()
 
     eval_loss /= len(dataloader.dataset)
     eval_acc /= len(dataloader.dataset)
@@ -118,7 +120,7 @@ def trainAndGetBestModel(model, optimizer, dataloaders, config):
             optimizer.step()
             epoch_loss = loss.detach().cpu().item() * len(img)
             train_loss += epoch_loss
-            train_acc += calculate_correct(digit_logits, digit_labels).detach().cpu().item()
+            train_acc += calculate_correct(digit_logits, digit_labels, length_logit, length_labels).detach().cpu().item()
 
         train_loss /= len(dataloaders['train'].dataset)
         train_acc /= len(dataloaders['train'].dataset)

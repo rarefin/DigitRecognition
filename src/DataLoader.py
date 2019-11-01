@@ -29,7 +29,19 @@ def createNegativeSample(neg_sample_files, random_box_coordinates):
     image = Image.open(neg_sample_files[rand_image_index])
     box = random_box_coordinates[rand_box_index]
 
-    image = image.crop([box[0], box[1], box[2], box[3]])
+    img_width, img_height = 512, 512
+
+    box_width = box[2]-box[0]
+    box_height = box[3]-box[1]
+
+    box_width += 0.15 * box_width
+    box_height += 0.15 * box_height
+
+    x1 = np.random.randint(low=0, high=img_width-box_width)
+    y1 = np.random.randint(low=0, high=img_height-box_height)
+
+    image = image.crop([x1, y1, x1+box_width, y1+box_height])
+
     image = image.resize([64, 64])
     num_digits = 0
     digits = [10, 10, 10, 10, 10]
