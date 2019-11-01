@@ -9,7 +9,7 @@ import json
 
 
 def getRandomBoxes(file):
-    with open('config.json', "r") as read_file:
+    with open(file, "r") as read_file:
         config = json.load(read_file)
 
     return config['sample_box_coordinate']
@@ -29,7 +29,7 @@ def createNegativeSample(neg_sample_files, random_box_coordinates):
     image = Image.open(neg_sample_files[rand_image_index])
     box = random_box_coordinates[rand_box_index]
 
-    image = image.crop([box[0], box[1], box[3], box[4]])
+    image = image.crop([box[0], box[1], box[2], box[3]])
     image = image.resize([64, 64])
     num_digits = 0
     digits = [10, 10, 10, 10, 10]
@@ -67,12 +67,12 @@ class DataSet(Dataset):
             image = image.reshape([64, 64, 3])
             image = Image.fromarray(image)
 
-            if self._transform is not None:
-                image = self._transform(image)
-
             num_digits = example.length
             digits = example.digits
         else:
             image, num_digits, digits = createNegativeSample(self.neg_sample_files, self.random_box_coordinates)
+
+        if self._transform is not None:
+            image = self._transform(image)
 
         return image, num_digits, digits
